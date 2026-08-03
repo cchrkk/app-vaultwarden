@@ -1,0 +1,64 @@
+---
+name: Update Vaultwarden
+
+# yamllint disable-line rule:truthy
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: update-vaultwarden
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Update to latest Vaultwarden release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Get latest Vaultwarden release
+        id: latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(gh api repos/dani-garcia/vaultwarden/releases/latest --jq '.tag_name')"
+          tag="${tag#v}"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Get pinned version
+        id: current
+        run: |
+          pinned="$(sed -n 's|.*FROM "vaultwarden/server:\([^"]*\)" AS vaultwarden.*|\1|p' vaultwarden/Dockerfile)"
+          echo "pinned=${pinned}" >> "$GITHUB_OUTPUT"
+
+      - name: Bump version
+        if: steps.latest.outputs.tag != steps.current.outputs.pinned
+        env:
+          LATEST: ${{ steps.latest.outputs.tag }}
+        run: |
+          sed -i \
+            "s|FROM \"vaultwarden/server:.*\" AS vaultwarden|FROM \"vaultwarden/server:${LATEST}\" AS vaultwarden|" \
+            vaultwarden/Dockerfile
+          sed -i "s/^version: .*/version: ${LATEST}/" vaultwarden/config.yaml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add vaultwarden/Dockerfile vaultwarden/config.yaml
+          git commit -m "⬆️ Update Vaultwarden to ${LATEST}"
+          git push origin main
+          git tag "v${LATEST}"
+          git push origin "v${LATEST}"
+
+      - name: Create release
+        if: steps.latest.outputs.tag != steps.current.outputs.pinned
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST: ${{ steps.latest.outputs.tag }}
+        run: |
+          gh release create "v${LATEST}" --generate-notes --title "Vaultwarden ${LATEST}" || true

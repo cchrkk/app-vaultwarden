@@ -20,6 +20,25 @@
 
 Open source password management solution.
 
+## Installation
+
+Add this repository to Home Assistant:
+
+1. Go to **Settings → Add-ons → Add-on Store**.
+2. Click the **⋮** (three dots) menu in the top right and select
+   **Repositories**.
+3. Add the repository URL:
+
+   ```text
+   https://github.com/cchrkk/app-vaultwarden
+   ```
+
+4. Reload the page, install the **Vaultwarden** add-on and start it.
+
+This fork is kept up to date automatically: a GitHub Action checks for a new
+[Vaultwarden release][vaultwarden] every 6 hours and publishes an updated
+add-on version, so Home Assistant shows an update when one is available.
+
 ## About
 
 Bitwarden is an open-source password manager that can store sensitive
