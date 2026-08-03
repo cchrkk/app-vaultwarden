@@ -66,9 +66,9 @@ jobs:
           ARCHITECTURE: ${{ matrix.architecture }}
         run: |
           echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
-          echo "name=$(sed -n 's/^name: //p' vaultwarden/config.yaml)" >> "$GITHUB_OUTPUT"
-          echo "description=$(sed -n 's/^description: //p' vaultwarden/config.yaml)" >> "$GITHUB_OUTPUT"
-          from="$(sed -n "s/^[[:space:]]*${ARCHITECTURE}:[[:space:]]*//p" vaultwarden/build.yaml)"
+          echo "name=$(sed -n 's/^name: //p' bitwarden/config.yaml)" >> "$GITHUB_OUTPUT"
+          echo "description=$(sed -n 's/^description: //p' bitwarden/config.yaml)" >> "$GITHUB_OUTPUT"
+          from="$(sed -n "s/^[[:space:]]*${ARCHITECTURE}:[[:space:]]*//p" src/build.yaml)"
           echo "from=${from}" >> "$GITHUB_OUTPUT"
 
           if [[ "${ARCHITECTURE}" = "amd64" ]]; then
@@ -94,8 +94,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/app-vaultwarden/${{ matrix.architecture }}:${{ needs.information.outputs.version }}
             ${{ needs.information.outputs.environment == 'edge' && format('ghcr.io/{0}/app-vaultwarden/{1}:edge', github.repository_owner, matrix.architecture) || '' }}
-          context: ./vaultwarden
-          file: ./vaultwarden/Dockerfile
+          context: ./src
+          file: ./src/Dockerfile
           cache-from: |
             type=gha,scope=${{ matrix.architecture }}
           cache-to: type=gha,mode=max,scope=${{ matrix.architecture }}
