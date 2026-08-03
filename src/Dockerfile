@@ -37,6 +37,15 @@ RUN \
 # Copy root filesystem
 COPY rootfs /
 
+# Ensure s6 service scripts are executable
+RUN chmod a+x \
+        /etc/s6-overlay/s6-rc.d/init-nginx/run \
+        /etc/s6-overlay/s6-rc.d/init-nginx/up \
+        /etc/s6-overlay/s6-rc.d/nginx/run \
+        /etc/s6-overlay/s6-rc.d/nginx/finish \
+        /etc/s6-overlay/s6-rc.d/vaultwarden/run \
+        /etc/s6-overlay/s6-rc.d/vaultwarden/finish
+
 # Build arguments
 ARG BUILD_ARCH
 ARG BUILD_DATE
